@@ -1,3 +1,7 @@
+import requests
+from requests.exceptions import HTTPError
+
+
 class Battle:
     """ 
     A Battle object represents a battle event between two axie players or between a player and AI that ocurred in the past.
@@ -31,7 +35,7 @@ class Battle:
     
     @property
     def winner(self) -> str:
-        return self.player1_id if self.winner == 0 else self.player2_id
+        return self.player1_id if self.__winner == 0 else self.player2_id
     
     @property
     def date(self) -> str:
@@ -46,7 +50,7 @@ class Battle:
         return self.__battle_type
 
 
-def __create_battle(dict):
+def _create_battle(dict):
     # :param dict: Response from a battle request to the API
     battle_id = dict["id"]
     player1_id = dict["first_client_id"]
@@ -56,3 +60,41 @@ def __create_battle(dict):
     battle_type = dict["battle_type"]
 
     return Battle(battle_id, player1_id, player2_id, winner, time_stamp, battle_type)
+
+
+class ApiClient:
+    """
+    Main class to interact with the Axie Infinity API
+    """
+    def __init__(self, url="https://lunacia.skymavis.com/game-api/"):
+        self.url = url
+    
+    def _make_request(self, endpoint: str):
+        """
+        Handles status codes and returns a python dictionary with the response data
+        """
+        url = self.url + endpoint
+        r = requests.get(url)
+        if r.status_code == 200:
+            return r.json()
+        else:
+            if r:
+                # Successfull but different status_code
+                raise Exception(f"Request to {url} unsuccessful. Status Code: {r.status_code}")
+            else:
+                r.raise_for_status()
+            
+    def get_latest_battles(self):
+        """
+        Returns a list (actually a generator) of Battle with the latest 10 battles in Axie Infinity
+        """
+
+        battles = self._make_request("battles")["items"]
+        return (_create_battle(b) for b in battles)
+
+
+if __name__ == "__main__":
+    a = ApiClient()
+    battles = a.get_latest_battles()
+    for i in battles:
+        print(i, '\n')
