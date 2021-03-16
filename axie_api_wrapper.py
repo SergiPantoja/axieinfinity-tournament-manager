@@ -47,11 +47,12 @@ class Battle:
 
 
 def __create_battle(dict):
+    # :param dict: Response from a battle request to the API
     battle_id = dict["id"]
     player1_id = dict["first_client_id"]
     player2_id = dict["second_client_id"]
     winner = dict["winner"]
     time_stamp = dict["created_at"]
     battle_type = dict["battle_type"]
-    return Battle(battle_id, player1_id, player2_id, winner, time_stamp, battle_type)
 
+    return Battle(battle_id, player1_id, player2_id, winner, time_stamp, battle_type)
