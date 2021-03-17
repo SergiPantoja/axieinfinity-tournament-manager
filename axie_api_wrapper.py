@@ -7,7 +7,7 @@ class Battle:
     A Battle object represents a battle event between two axie players or between a player and AI that ocurred in the past.
     """
     def __init__(self, battle_id, player1_id, player2_id, winner, time_stamp, battle_type):
-        self.__battle_id = int(battle_id)
+        self.__battle_id = battle_id
         self.__player1_id = player1_id
         self.__player2_id = player2_id
         self.__winner = int(winner)
@@ -19,7 +19,7 @@ class Battle:
                 + f"Winner: {self.winner}\nDate: {self.date}, Time: {self.time}"
 
     @property
-    def battle_id(self) -> int:
+    def battle_id(self) -> str:
         return self.__battle_id
     
     @property
@@ -84,17 +84,50 @@ class ApiClient:
             else:
                 r.raise_for_status()
             
-    def get_latest_battles(self):
+    def get_latest_battles(self, limit=10, offset=0):
         """
-        Returns a list (actually a generator) of Battle with the latest 10 battles in Axie Infinity
+        Returns a list (actually a generator) of Battle with the latest battles in Axie Infinity.
+        :param limit: Amount of battles to request.
+        :param offset: Number of battles to remove from the result starting from the most recent to the oldest.
+        """
+        
+        url = f"battles?limit={str(limit)}&offset={str(offset)}"
+        battles = self._make_request(url)["items"]
+        return (_create_battle(b) for b in battles)
+    
+    def get_battle_by_id(self, battle_id: str):
+        """
+        Returns a Battle object. The battle of id <battle_id>.
         """
 
-        battles = self._make_request("battles")["items"]
+        battle = self._make_request(f"battles/{str(battle_id)}")
+        return _create_battle(battle)
+
+    def get_user_battles(self, eth_addr: str, limit=10, offset=0):
+        """
+        Returns a generator of the latest 10 battles of the user with the Ethereum account <eth_addr>.
+        :param eth_addr: Ethereum address of the player.
+        :param limit: Amount of battles to request.
+        :param offset: Number of battles to remove from the result starting from the most recent to the oldest.
+        """
+        url = f"clients/{eth_addr}/battles?limit={limit}&offset={offset}"
+        battles = self._make_request(url)["items"]
         return (_create_battle(b) for b in battles)
 
 
 if __name__ == "__main__":
     a = ApiClient()
-    battles = a.get_latest_battles()
+    battles = a.get_latest_battles(100, 3)
     for i in battles:
         print(i, '\n')
+    
+    print("\n\n")
+
+    battle2 = a.get_battle_by_id("3424")
+    print(battle2, "\n")
+
+    print("\n\n")
+
+    #player_battles = a.get_user_battles('<eth_addr>', limit=100, offset=20)
+    #for i in player_battles:
+    #    print(i, "\n")
