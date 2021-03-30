@@ -97,7 +97,7 @@ class ApiClient:
     
     def get_battle_by_id(self, battle_id: str):
         """
-        Returns a Battle object. The battle of id <battle_id>.
+        Returns a Battle object. The battle of id $battle_id.
         """
 
         battle = self._make_request(f"battles/{str(battle_id)}")
@@ -105,7 +105,7 @@ class ApiClient:
 
     def get_user_battles(self, eth_addr: str, limit=10, offset=0):
         """
-        Returns a generator of the latest 10 battles of the user with the Ethereum account <eth_addr>.
+        Returns a generator of the latest battles of the user with the Ethereum account $eth_addr$.
         :param eth_addr: Ethereum address of the player.
         :param limit: Amount of battles to request.
         :param offset: Number of battles to remove from the result starting from the most recent to the oldest.
